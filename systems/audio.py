@@ -17,11 +17,14 @@ SFX_FILES = {
 }
 EXPLOSION_FILES = sorted(SFX_DIR.glob("explosion*.mp3"))
 SOUNDTRACK_FILES = sorted(SOUNDTRACK_DIR.glob("*.mp3"))
+MUSIC_PAUSE_MS = 2000
 
 effects_volume = 1.0
 music_volume = 1.0
 audio_enabled = True
 music_started = False
+waiting_for_music = False
+next_music_at = 0
 sound_cache = {}
 current_soundtrack = None
 
@@ -66,18 +69,32 @@ def start_music():
     if not _mixer_ready() or pygame.mixer.music.get_busy():
         return
 
-    _play_random_soundtrack()
+    _schedule_next_soundtrack()
 
 
 def update_music():
-    if music_started and _mixer_ready() and not pygame.mixer.music.get_busy():
+    if not music_started or not _mixer_ready():
+        return
+
+    if not pygame.mixer.music.get_busy() and not waiting_for_music:
+        _schedule_next_soundtrack()
+
+    if waiting_for_music and pygame.time.get_ticks() >= next_music_at:
         _play_random_soundtrack()
 
 
+def _schedule_next_soundtrack():
+    global waiting_for_music, next_music_at
+
+    waiting_for_music = True
+    next_music_at = pygame.time.get_ticks() + MUSIC_PAUSE_MS
+
+
 def _play_random_soundtrack():
-    global current_soundtrack
+    global current_soundtrack, waiting_for_music
 
     if not SOUNDTRACK_FILES:
+        waiting_for_music = False
         return
 
     next_soundtrack = random.choice(SOUNDTRACK_FILES)
@@ -91,7 +108,9 @@ def _play_random_soundtrack():
         pygame.mixer.music.set_volume(music_volume)
         pygame.mixer.music.play()
         current_soundtrack = next_soundtrack
+        waiting_for_music = False
     except pygame.error:
+        waiting_for_music = False
         _disable_audio()
 
 

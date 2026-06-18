@@ -13,14 +13,14 @@ from systems.radial_menu_tower import (
     create_build_options
 )
 from systems.menu import Menu
+from systems.data_log import DataLog
+from systems.victory_screen import VictoryScreen
 from systems import audio
 
 # TODO:
 # Add a high-tier boss enemy.
 # Add more waves.
 # Finish turret and enemy balancing.
-# Add a lore screen popup for game start.
-# Add a game over screen.
 pygame.init()
 pygame.display.set_caption("Iron Dome")
 screen = pygame.display.set_mode(
@@ -122,6 +122,8 @@ def draw_game_over(screen):
 
 #This main function is actually incomprehensible 
 menu = Menu(SCREEN_WIDTH, SCREEN_HEIGHT)
+data_log = DataLog(SCREEN_WIDTH, SCREEN_HEIGHT)
+victory_screen = VictoryScreen(SCREEN_WIDTH, SCREEN_HEIGHT)
 main_menu = MainMenu(
     SCREEN_WIDTH,
     SCREEN_HEIGHT,
@@ -130,6 +132,9 @@ main_menu = MainMenu(
 radial_menu = RadialMenu()
 build_options = create_build_options()
 enemy_options = create_enemy_options()
+data_log_open = False
+data_log_dismissed = False
+victory_open = False
 
 running = True
 #Main game loop
@@ -156,7 +161,12 @@ while running:
                 if game_over_started_at is not None:
                     continue
 
-                if radial_menu.is_open:
+                if victory_open:
+                    continue
+                elif data_log_open:
+                    data_log_open = False
+                    data_log_dismissed = True
+                elif radial_menu.is_open:
                     radial_menu.close()
                 else:
                     main_menu.toggle()
@@ -167,6 +177,41 @@ while running:
 
             mouse_pos = event.pos
             gx, gy = grid.world_to_grid(mouse_pos)
+
+            if victory_open:
+                if victory_screen.restart_contains(mouse_pos):
+                    (
+                        path_tiles,
+                        grid,
+                        path,
+                        wave_manager,
+                        enemies,
+                        towers,
+                        projectiles,
+                        metal,
+                        player_health,
+                        enemies_killed,
+                        game_over_started_at
+                    ) = reset_progress()
+                    data_log_open = False
+                    data_log_dismissed = False
+                    victory_open = False
+                continue
+
+            if data_log_open:
+                if data_log.close_contains(mouse_pos):
+                    data_log_open = False
+                    data_log_dismissed = True
+                continue
+
+            if (
+                not data_log_dismissed
+                and data_log.button_contains(mouse_pos)
+            ):
+                data_log_open = True
+                radial_menu.close()
+                main_menu.close()
+                continue
 
             if (
                 main_menu.main_button_contains(mouse_pos)
@@ -192,6 +237,9 @@ while running:
                         enemies_killed,
                         game_over_started_at
                     ) = reset_progress()
+                    data_log_open = False
+                    data_log_dismissed = False
+                    victory_open = False
 
                 continue
 
@@ -261,6 +309,8 @@ while running:
     if (
         game_over_started_at is None
         and not main_menu.is_open
+        and not data_log_open
+        and not victory_open
     ):
         wave_was_active = wave_manager.wave_active
         wave_manager.update(enemies, path)
@@ -292,6 +342,11 @@ while running:
         if wave_was_active and not wave_manager.wave_active:
             audio.play_sfx("wave_over")
 
+        if wave_manager.all_waves_complete:
+            victory_open = True
+            radial_menu.close()
+            main_menu.close()
+
         projectiles = [
             p for p in projectiles
             if p.active
@@ -321,6 +376,9 @@ while running:
                 enemies_killed,
                 game_over_started_at
             ) = reset_progress()
+            data_log_open = False
+            data_log_dismissed = False
+            victory_open = False
 
     screen.fill(BACKGROUND_COLOR)
 
@@ -352,7 +410,13 @@ while running:
 
     radial_menu.draw(screen, pygame.mouse.get_pos())
     main_menu.draw_button(screen)
+    if not data_log_dismissed and not data_log_open:
+        data_log.draw_button(screen, pygame.time.get_ticks())
     main_menu.draw_overlay(screen)
+    if data_log_open:
+        data_log.draw_panel(screen)
+    if victory_open:
+        victory_screen.draw(screen)
 
     if game_over_started_at is not None:
         draw_game_over(screen)

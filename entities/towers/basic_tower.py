@@ -15,9 +15,9 @@ class BasicTower(Tower):
     }
     cost = 50
     damage = 10
-    range_radius = 180
+    range_radius = 200
     fire_rate = 25
-    info = "Mk3 Gatling Laser, this model comes with alternating barrels for even more cooling, and even more firepower."
+    info = "The SynTech Gatling Laser Mk3, this model comes with alternating barrels for even more cooling, and even more firepower."
 
     def __init__(self, x, y):
         super().__init__(

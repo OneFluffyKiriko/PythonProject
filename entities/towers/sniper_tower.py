@@ -14,9 +14,9 @@ class SniperTower(Tower):
     }
     cost = 120
     damage = 80
-    range_radius = 350
+    range_radius = 500
     fire_rate = 120
-    info = ""
+    info = "MK2 Laser Cannon, an older generation of the laser gatling cannon. It by itself is just a big barely-modified laser mining aparatus, stripped straight from a mining vessel, with much pricier capacitors."
 
     def __init__(self, x, y):
         super().__init__(

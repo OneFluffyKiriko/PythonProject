@@ -9,13 +9,13 @@ class SplashTower(Tower):
     barrel_side_offset = 6
     tags = [ARMORED]
     tag_damage_modifiers = {
-        ARMORED: 25
+        ARMORED: 40
     }
     cost = 90
     damage = 40
-    range_radius = 150
+    range_radius = 130
     fire_rate = 60
-    info = ""
+    info = "The Tartarus.Co Chemical Ablation Unit, also dubbed the Splash cannon, is a simple asteriod clearing implement that fires a self-propelled chemcical payload to melt rock. Today, hovewer, it will melt the frames of the enemy."
 
     def __init__(self, x, y):
         super().__init__(

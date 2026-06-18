@@ -54,13 +54,7 @@ class Menu:
             (16, 80),
             (190, 220, 255)
         )
-        self._draw_text(
-            screen,
-            f"Basic Tower: {tower_cost} metal",
-            (16, 112),
-            (255, 255, 255),
-            self.small_font
-        )
+
 
         health_rect = pygame.Rect(0, 12, 150, 40)
         health_rect.centerx = screen.get_width() // 2
