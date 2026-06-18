@@ -5,6 +5,7 @@ import pygame
 
 INFO_FILE = Path(__file__).resolve().parents[1] / "utils" / "info.txt"
 SETTINGS_FILE = Path(__file__).resolve().parents[1] / "utils" / "settings.py"
+VOLUME_SETTINGS = ("EFFECTS_VOLUME", "MUSIC_VOLUME")
 
 
 class MainMenu:
@@ -35,6 +36,8 @@ class MainMenu:
         self.info_button = pygame.Rect(0, 0, 1, 1)
         self.close_button = pygame.Rect(0, 0, 1, 1)
         self.setting_buttons = []
+        self.volume_sliders = {}
+        self.dragging_slider = None
         self.info_text = self._load_info_text()
         self._layout_buttons()
 
@@ -79,12 +82,27 @@ class MainMenu:
             return None
 
         if self.panel == "settings":
+            if self._change_volume_from_mouse(mouse_pos):
+                return "settings_changed"
+
             for setting_name, delta, rect in self.setting_buttons:
                 if rect.collidepoint(mouse_pos):
                     self._change_setting(setting_name, delta)
                     return "settings_changed"
 
         return None
+
+    def handle_mouse_motion(self, mouse_pos):
+        if self.dragging_slider is None:
+            return None
+
+        if self._set_volume_from_mouse(self.dragging_slider, mouse_pos):
+            return "settings_changed"
+
+        return None
+
+    def handle_mouse_up(self):
+        self.dragging_slider = None
 
     def draw_button(self, screen):
         self._draw_rect_button(
@@ -188,7 +206,7 @@ class MainMenu:
         button_size = max(28, int(self.overlay_rect.height * 0.052))
         plus_x = self.overlay_rect.right - int(self.overlay_rect.width * 0.08)
 
-        for setting_name in self.settings_values:
+        for setting_name in self._stepper_settings():
             minus_rect = pygame.Rect(panel_x, y, button_size, button_size)
             plus_rect = pygame.Rect(plus_x, y, button_size, button_size)
             self.setting_buttons.append((setting_name, -1, minus_rect))
@@ -212,10 +230,11 @@ class MainMenu:
         plus_x = self.overlay_rect.right - int(self.overlay_rect.width * 0.08)
         row_gap = int(self.overlay_rect.height * 0.12)
 
-        for setting_name, value in self.settings_values.items():
+        for setting_name in self._stepper_settings():
+            value = self.settings_values[setting_name]
             self._draw_text(
                 screen,
-                setting_name,
+                self._format_setting_name(setting_name),
                 (panel_x + button_size + 12, y + 4),
                 (205, 220, 235),
                 self.small_font
@@ -248,7 +267,91 @@ class MainMenu:
             )
             y += row_gap
 
+        y += int(self.overlay_rect.height * 0.035)
+        self._draw_text(
+            screen,
+            "Sound",
+            (panel_x, y),
+            (255, 255, 255),
+            self.small_font
+        )
+        y += int(self.overlay_rect.height * 0.06)
+        self._draw_volume_sliders(screen, panel_x, y)
+
         self._layout_setting_buttons()
+
+    def _draw_volume_sliders(self, screen, panel_x, y):
+        self.volume_sliders = {}
+        label_width = int(self.overlay_rect.width * 0.19)
+        track_width = int(self.overlay_rect.width * 0.25)
+        track_height = 6
+        row_gap = int(self.overlay_rect.height * 0.105)
+        track_x = panel_x + label_width
+        value_x = track_x + track_width + 44
+
+        for setting_name in VOLUME_SETTINGS:
+            value = self.settings_values.get(setting_name, 100)
+            label = self._format_setting_name(setting_name)
+            track_rect = pygame.Rect(
+                track_x,
+                y + 13,
+                track_width,
+                track_height
+            )
+            knob_x = track_rect.left + int(track_rect.width * value / 100)
+            knob_rect = pygame.Rect(0, 0, 16, 16)
+            knob_rect.center = (knob_x, track_rect.centery)
+
+            self.volume_sliders[setting_name] = track_rect
+
+            self._draw_text(
+                screen,
+                label,
+                (panel_x, y + 2),
+                (205, 220, 235),
+                self.small_font
+            )
+            pygame.draw.rect(
+                screen,
+                (70, 78, 88),
+                track_rect,
+                border_radius=3
+            )
+            pygame.draw.rect(
+                screen,
+                (150, 205, 180),
+                (
+                    track_rect.left,
+                    track_rect.top,
+                    max(0, knob_x - track_rect.left),
+                    track_rect.height
+                ),
+                border_radius=3
+            )
+            pygame.draw.circle(
+                screen,
+                (235, 245, 240),
+                knob_rect.center,
+                knob_rect.width // 2
+            )
+            pygame.draw.circle(
+                screen,
+                (95, 125, 110),
+                knob_rect.center,
+                knob_rect.width // 2,
+                width=2
+            )
+
+            value_text = self.small_font.render(
+                f"{value}%",
+                True,
+                (255, 255, 255)
+            )
+            value_rect = value_text.get_rect(
+                midleft=(value_x, track_rect.centery)
+            )
+            screen.blit(value_text, value_rect)
+            y += row_gap
 
     def _draw_info_panel(self, screen):
         panel_x = self._content_left()
@@ -300,6 +403,39 @@ class MainMenu:
         value = min(maximums.get(setting_name, value), value)
         self.settings_values[setting_name] = value
         self._save_settings_file()
+
+    def _change_volume_from_mouse(self, mouse_pos):
+        for setting_name, track_rect in self.volume_sliders.items():
+            hit_rect = track_rect.inflate(18, 22)
+            if hit_rect.collidepoint(mouse_pos):
+                self.dragging_slider = setting_name
+                return self._set_volume_from_mouse(setting_name, mouse_pos)
+
+        return False
+
+    def _set_volume_from_mouse(self, setting_name, mouse_pos):
+        track_rect = self.volume_sliders.get(setting_name)
+        if track_rect is None:
+            return False
+
+        relative_x = mouse_pos[0] - track_rect.left
+        value = round(max(0, min(track_rect.width, relative_x)) / track_rect.width * 100)
+        if self.settings_values.get(setting_name) == value:
+            return False
+
+        self.settings_values[setting_name] = value
+        self._save_settings_file()
+        return True
+
+    def _stepper_settings(self):
+        return [
+            setting_name
+            for setting_name in self.settings_values
+            if setting_name not in VOLUME_SETTINGS
+        ]
+
+    def _format_setting_name(self, setting_name):
+        return setting_name.replace("_", " ").title()
 
     def _content_left(self):
         return self.overlay_rect.x + int(self.overlay_rect.width * 0.38)

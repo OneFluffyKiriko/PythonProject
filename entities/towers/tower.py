@@ -5,6 +5,7 @@ import pygame
 
 from entities.projectiles.laser import LaserProjectile
 from entities.projectiles.projectile import Projectile
+from systems import audio
 from systems.tags import get_matching_tags
 
 
@@ -20,6 +21,7 @@ class Tower:
     tags = []
     tag_damage_modifiers = {}
     projectile_type = "projectile"
+    fire_sound = None
 
     def __init__(
         self,
@@ -105,23 +107,62 @@ class Tower:
 
     def create_projectile(self, target):
         if self.projectile_type == "laser":
-            return LaserProjectile(
+            projectile = LaserProjectile(
                 self.get_projectile_start_point(target),
                 self.get_projectile_end_point(target),
                 target,
                 self.get_damage_against(target)
             )
+            self.play_fire_sound()
+            return projectile
 
-        return Projectile(
-            self.x,
-            self.y,
+        start_x, start_y = self.get_projectile_start_point(target)
+        projectile = Projectile(
+            start_x,
+            start_y,
             target,
             self.get_damage_against(target),
             8
         )
+        self.play_fire_sound()
+        return projectile
+
+    def play_fire_sound(self):
+        if self.fire_sound:
+            audio.play_sfx(self.fire_sound)
 
     def get_projectile_start_point(self, target):
         return (int(self.x), int(self.y))
+
+    def get_offset_projectile_start_point(
+        self,
+        target,
+        forward_offset,
+        side_offset=0
+    ):
+        dx = target.x - self.x
+        dy = target.y - self.y
+        distance = math.hypot(dx, dy)
+
+        if distance == 0:
+            aim_radians = math.radians(-self.angle - 90)
+            forward_x = math.cos(aim_radians)
+            forward_y = math.sin(aim_radians)
+        else:
+            forward_x = dx / distance
+            forward_y = dy / distance
+
+        side_x = -forward_y
+        side_y = forward_x
+
+        return (
+            int(round(
+                self.x + forward_x * forward_offset + side_x * side_offset
+            )),
+            int(round(
+                self.y + forward_y * forward_offset + side_y * side_offset
+            ))
+        )
 
     def get_projectile_end_point(self, target):
         return (int(target.x), int(target.y))

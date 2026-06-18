@@ -13,8 +13,14 @@ from systems.radial_menu_tower import (
     create_build_options
 )
 from systems.menu import Menu
+from systems import audio
 
-
+# TODO:
+# Add a high-tier boss enemy.
+# Add more waves.
+# Finish turret and enemy balancing.
+# Add a lore screen popup for game start.
+# Add a game over screen.
 pygame.init()
 pygame.display.set_caption("Iron Dome")
 screen = pygame.display.set_mode(
@@ -27,9 +33,21 @@ runtime_settings = {
     "FPS": FPS,
     "GRID_SIZE": GRID_SIZE,
     "STARTING_METAL": STARTING_METAL,
-    "STARTING_HEALTH": STARTING_HEALTH
+    "STARTING_HEALTH": STARTING_HEALTH,
+    "EFFECTS_VOLUME": EFFECTS_VOLUME,
+    "MUSIC_VOLUME": MUSIC_VOLUME
 }
 game_reset = GameReset(SCREEN_WIDTH, SCREEN_HEIGHT, WAVES)
+
+
+def apply_audio_settings():
+    audio.configure(
+        runtime_settings["EFFECTS_VOLUME"],
+        runtime_settings["MUSIC_VOLUME"]
+    )
+
+
+apply_audio_settings()
 
 
 def unpack_state(state):
@@ -118,11 +136,20 @@ running = True
 while running:
 
     clock.tick(runtime_settings["FPS"])
+    audio.update_music()
 
     for event in pygame.event.get():
 
         if event.type == pygame.QUIT:
             running = False
+
+        if event.type == pygame.MOUSEMOTION:
+            action = main_menu.handle_mouse_motion(event.pos)
+            if action == "settings_changed":
+                apply_audio_settings()
+
+        if event.type == pygame.MOUSEBUTTONUP:
+            main_menu.handle_mouse_up()
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
@@ -148,6 +175,9 @@ while running:
                 radial_menu.close()
                 action = main_menu.handle_click(mouse_pos)
 
+                if action == "settings_changed":
+                    apply_audio_settings()
+
                 if action == "restart":
                     (
                         path_tiles,
@@ -170,7 +200,9 @@ while running:
                 wave_manager.cleared_wave
             ):
                 radial_menu.close()
-                wave_manager.start_next_wave()
+                if wave_manager.start_next_wave():
+                    audio.play_sfx("wave_start")
+                    audio.start_music()
                 continue
 
             if menu.wave_button_contains(mouse_pos):
@@ -230,6 +262,7 @@ while running:
         game_over_started_at is None
         and not main_menu.is_open
     ):
+        wave_was_active = wave_manager.wave_active
         wave_manager.update(enemies, path)
 
         for enemy in enemies:
@@ -249,12 +282,15 @@ while running:
                 metal += enemy.metal_reward
                 enemies_killed += 1
                 enemy.metal_collected = True
+                audio.play_random_explosion()
 
         enemies = [
             e for e in enemies
             if e.alive
         ]
         wave_manager.check_cleared_wave(enemies)
+        if wave_was_active and not wave_manager.wave_active:
+            audio.play_sfx("wave_over")
 
         projectiles = [
             p for p in projectiles
@@ -264,6 +300,7 @@ while running:
         if player_health <= 0:
             player_health = 0
             game_over_started_at = pygame.time.get_ticks()
+            audio.play_sfx("game_over")
             radial_menu.close()
             main_menu.close()
 
