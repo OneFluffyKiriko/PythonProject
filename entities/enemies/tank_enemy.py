@@ -7,7 +7,7 @@ class TankEnemy(Enemy):
     speed = 1
     metal_reward = 50
     sprite_file = "Armored_Robot.png"
-    info = ""
+    info = "A heavy, nearly-mech grade machine. This one's heat shielding can withstand atmospheric re-etry temps. Heavier arnaments will be needed to get through its shell... Or a sufficient quantity of lighter ones."
 
     def __init__(self, path):
         super().__init__(

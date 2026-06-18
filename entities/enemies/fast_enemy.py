@@ -7,7 +7,7 @@ class FastEnemy(Enemy):
     speed = 4
     metal_reward = 15
     sprite_file = "Fast_Robot.png"
-    info = "Test"
+    info = "A light, agile machine. Casted titanium frame, newest alloys, the most efficient servomotors in the sector... Still, this means the components inside are quite suseptible to overheating from laser fire."
 
     def __init__(self, path):
         super().__init__(

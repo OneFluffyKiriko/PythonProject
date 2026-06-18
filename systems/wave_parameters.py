@@ -1,3 +1,4 @@
+#Functions as a list of all incoming waves, in order. Waves can be added or adjusted as needed.
 WAVES = [
     {
         "spawn_delay": 45,

@@ -7,7 +7,7 @@ class BasicEnemy(Enemy):
     speed = 2
     metal_reward = 10
     sprite_file = "Robot.png"
-    info = ""
+    info = "The most common type of attacker. Still, it shouldn't be underestimated, its durability is the best for it's weight class, and the cheap price means there never is only one of them."
 
     def __init__(self, path):
         super().__init__(

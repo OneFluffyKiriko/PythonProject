@@ -11,10 +11,10 @@ class BasicTower(Tower):
         ARMORED: -5
     }
     cost = 50
-    damage = 25
+    damage = 10
     range_radius = 180
-    fire_rate = 45
-    info = ""
+    fire_rate = 25
+    info = "Mk3 Gatling Laser, this model comes with alternating barrels for even more cooling, and even more firepower."
 
     def __init__(self, x, y):
         super().__init__(

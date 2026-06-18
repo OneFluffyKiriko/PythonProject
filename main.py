@@ -14,6 +14,7 @@ from systems.main_menu import MainMenu
 from systems.radial_menu import RadialMenu, RadialMenuOption
 from systems.menu import Menu
 
+
 pygame.init()
 pygame.display.set_caption("Iron Dome")
 screen = pygame.display.set_mode(
@@ -66,7 +67,7 @@ game_state = game_reset.create_state(
 
 game_over_started_at = None
 
-
+# TODO: Move the ui drawing out of main.py, into its own separate class.
 def reset_progress():
     state = game_reset.create_state(
         runtime_settings["STARTING_METAL"],
@@ -143,7 +144,7 @@ def create_enemy_option(label, enemy_class, color):
         info_text=enemy_class.info
     )
 
-
+#This main function is actually incomprehensible 
 menu = Menu(SCREEN_WIDTH, SCREEN_HEIGHT)
 main_menu = MainMenu(
     SCREEN_WIDTH,
@@ -190,7 +191,7 @@ enemy_options = [
 ]
 
 running = True
-
+#Main game loop
 while running:
 
     clock.tick(runtime_settings["FPS"])
