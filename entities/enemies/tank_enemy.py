@@ -3,7 +3,7 @@ from systems.tags import ARMORED
 
 class TankEnemy(Enemy):
     tags = [ARMORED]
-    health = 500
+    health = 750
     speed = 1
     metal_reward = 50
     sprite_file = "Armored_Robot.png"

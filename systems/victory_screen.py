@@ -2,8 +2,8 @@ import pygame
 
 
 VICTORY_LORE_MESSAGE = (
-    "Write your victory lore message here.\n\n"
-    "This text supports multiple lines and will wrap inside the victory menu."
+    "victory lore message pending\n\n"
+    "dont bully me"
 )
 
 

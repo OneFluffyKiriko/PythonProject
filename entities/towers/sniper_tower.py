@@ -12,7 +12,7 @@ class SniperTower(Tower):
         HIGH_TECH: 20,
         ARMORED: -10
     }
-    cost = 120
+    cost = 100
     damage = 80
     range_radius = 500
     fire_rate = 120

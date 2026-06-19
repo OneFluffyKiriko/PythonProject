@@ -3,9 +3,9 @@ from systems.tags import HIGH_TECH
 
 class FastEnemy(Enemy):
     tags = [HIGH_TECH]
-    health = 60
+    health = 100
     speed = 4
-    metal_reward = 15
+    metal_reward = 20
     sprite_file = "Fast_Robot.png"
     info = "A light, agile machine. Casted titanium frame, newest alloys, the most efficient servomotors in the sector... Still, this means the components inside are quite suseptible to overheating from laser fire."
 

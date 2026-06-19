@@ -10,13 +10,13 @@ class BasicTower(Tower):
     barrel_side_offset = 5
     tags = [MASS_PRODUCED]
     tag_damage_modifiers = {
-        MASS_PRODUCED: 5,
+        MASS_PRODUCED: 15,
         ARMORED: -5
     }
-    cost = 50
-    damage = 10
+    cost = 60
+    damage = 15
     range_radius = 200
-    fire_rate = 25
+    fire_rate = 35
     info = "The SynTech Gatling Laser Mk3, this model comes with alternating barrels for even more cooling, and even more firepower."
 
     def __init__(self, x, y):

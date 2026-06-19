@@ -3,9 +3,9 @@ from systems.tags import MASS_PRODUCED
 
 class BasicEnemy(Enemy):
     tags = [MASS_PRODUCED]
-    health = 100
+    health = 200
     speed = 2
-    metal_reward = 10
+    metal_reward = 15
     sprite_file = "Robot.png"
     info = "The most common type of attacker. Still, it shouldn't be underestimated, its durability is the best for it's weight class, and the cheap price means there never is only one of them."
 
