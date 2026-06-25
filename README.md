@@ -7,14 +7,17 @@ owned and created by:
  Kenney Vleugels (Kenney.nl)
    @KenneyNL on twitter.
 
-Soundtack belongs to Karl Casey @ White Bat Audio.
-
+Soundtacks:
+Hackers belongs to Karl Casey @ White Bat Audio.
+Comet Halley belongs to Stellardrone. https://stellardrone.bandcamp.com/track/comet-halley
 ------------------------------
-Special credits to:
-Credits pending.
+Special credits goes to:
+@Underrated, for development contributions.
+@Kola787, for providing bits of a custom soundtrack.
+@Tzukerka, for feedback and playtesting.
+And all the wonderful friends that helped me along the way with support and confidence boosts.
 
 
-
-    Game created by @OneFluffyKiriko and @Underrated.
+    Game created by @OneFluffyKiriko.
 
 
